@@ -7,9 +7,9 @@ jobs:
   info:
     runs-on: ubuntu-latest
     outputs:
-      commit-sha: ${{ steps.get-sha.outputs.sha }}
-      commit-message: ${{ steps.get-sha.outputs.message }}
-      branch-name: ${{ steps.get-branch.outputs.branch }}
+      commit-sha: ${{ steps.commit.outputs.sha }}
+      commit-message: ${{ steps.message.outputs.message }}
+      branch-name: ${{ steps.branch.outputs.name }}
     steps:
       - uses: actions/checkout@v5
 
@@ -23,13 +23,13 @@ jobs:
         id: message
         run: |
           MESSAGE=$(git log -1 --pretty=%B)
-          echo "message=$MESSAGE >> $GITHUB_OUTPUT"
+          echo "message=$MESSAGE" >> $GITHUB_OUTPUT
 
       - name: Get branch name
-        id: name
+        id: branch
         run: |
-          BRANCH=$(git rev-parse --abbrev-ref HEAD)
-          echo "branch=$BRANCH >> $GITHUB_OUTPUT"
+          NAME=$(git rev-parse --abbrev-ref HEAD)
+          echo "name=$NAME" >> $GITHUB_OUTPUT
   build:
     runs-on: ubuntu-latest
     needs: info
@@ -41,8 +41,9 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Print date and time
-        run: echo "Building commit ${{ needs.info.outputs.sha }} on branch ${{ needs.info.outputs.branch }}"
+      - name: Print commit info
+        run: echo "Building commit ${{ needs.info.outputs.commit-sha }} on branch ${{ needs.info.outputs.branch-name }}"
+
   summary:
     runs-on: ubuntu-latest
     needs: [info, build]
